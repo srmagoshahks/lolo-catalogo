@@ -1,5 +1,5 @@
 /**
- * LOLO SOBRE RUEDAS — Chat Widget v7.0 (Con Panel Secreto de Admin + Voz Clonada + Micrófono STT)
+ * LOLO SOBRE RUEDAS -- Chat Widget v7.1 (Panel Admin Secreto + Voz Clonada + Microfono STT)
  */
 
 const ADMIN_CREDENTIALS = {
@@ -19,12 +19,12 @@ const LOLo_CONFIG = {
     horario: '9:00 a 12:00 / 16:00 a 19:30'
   },
   SUGERENCIAS: [
-    '📦 ¿Qué tienen nuevo?',
-    '🔍 Buscar un producto',
-    '💰 ¿Cuánto sale...?',
-    '📞 Datos de contacto'
+    '\u{1F4E6} \u00BFQu\u00E9 tienen nuevo?',
+    '\u{1F50D} Buscar un producto',
+    '\u{1F4B0} \u00BFCu\u00E1nto sale...?',
+    '\u{1F4DE} Datos de contacto'
   ],
-  MENSAJE_BIENVENIDA: '¡Hola! 🛹 Bienvenido a LOLO Sobre Ruedas. Estoy acá para ayudarte a encontrar el regalo o producto ideal. Podés escribir o tocar el micrófono 🎙️ y hablarme directo. ¿Qué estás buscando hoy?'
+  MENSAJE_BIENVENIDA: '\u00A1Hola! \u{1F6F9} Bienvenido a LOLO Sobre Ruedas. Estoy ac\u00E1 para ayudarte a encontrar el regalo o producto ideal. Pod\u00E9s escribir o tocar el micr\u00F3fono \u{1F399}\u{FE0F} y hablarme directo. \u00BFQu\u00E9 est\u00E1s buscando hoy?'
 };
 
 (function() {
@@ -46,7 +46,7 @@ const LOLo_CONFIG = {
   let suggestionsArea = null;
   let voiceBtn = null;
 
-  // Reconocimiento de voz (Micrófono)
+  // Reconocimiento de voz (Microfono)
   let recognition = null;
   let isListening = false;
 
@@ -58,7 +58,7 @@ const LOLo_CONFIG = {
   // Estado global del Admin (Control Maestro)
   let adminConfig = { agente_activo: true, voz_activa: true };
   let adminModal = null;
-  let adminSession = null; // Guarda credenciales temporales si se logueó
+  let adminSession = null;
 
   function loadLocalAdminConfig() {
     try {
@@ -81,7 +81,7 @@ const LOLo_CONFIG = {
     applyAdminState();
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
       const res = await fetch(`${LOLo_CONFIG.API_BASE}/api/admin/status`, { signal: controller.signal });
       clearTimeout(timeoutId);
       if (res.ok) {
@@ -109,7 +109,7 @@ const LOLo_CONFIG = {
     if (adminConfig.voz_activa === false) {
       voiceEnabled = false;
       if (voiceBtn) {
-        voiceBtn.textContent = '🔇';
+        voiceBtn.textContent = '\u{1F507}';
         voiceBtn.title = 'Voz desactivada por el administrador';
         voiceBtn.style.opacity = '0.5';
         voiceBtn.disabled = true;
@@ -118,7 +118,7 @@ const LOLo_CONFIG = {
       if (voiceBtn) {
         voiceBtn.disabled = false;
         voiceBtn.style.opacity = '1';
-        voiceBtn.textContent = voiceEnabled ? '🔊' : '🔇';
+        voiceBtn.textContent = voiceEnabled ? '\u{1F50A}' : '\u{1F507}';
       }
     }
   }
@@ -136,7 +136,7 @@ const LOLo_CONFIG = {
       try {
         currentAudio = new Audio('data:audio/mp3;base64,' + base64Audio);
         currentAudio.play().catch(e => {
-          console.log('Error reproduciendo audio, usando fallback:', e);
+          console.log('Audio playback error, fallback:', e);
           speakFallback(fallbackText);
         });
         return;
@@ -166,7 +166,7 @@ const LOLo_CONFIG = {
     } catch(e) {}
   }
 
-  // Configurar reconocimiento de voz (Micrófono)
+  // Configurar reconocimiento de voz (Microfono)
   function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
@@ -181,9 +181,9 @@ const LOLo_CONFIG = {
         isListening = true;
         if (micBtn) {
           micBtn.classList.add('recording');
-          micBtn.title = 'Escuchando... Hablá ahora';
+          micBtn.title = 'Escuchando... Habl\u00E1 ahora';
         }
-        if (inputField) inputField.placeholder = '🎙️ Escuchando... Hablá ahora';
+        if (inputField) inputField.placeholder = '\u{1F399}\u{FE0F} Escuchando... Habl\u00E1 ahora';
       };
 
       recognition.onresult = function(event) {
@@ -210,7 +210,7 @@ const LOLo_CONFIG = {
 
   function toggleListening() {
     if (!recognition) {
-      alert('Tu navegador no soporta dictado por voz. Podés escribir tu mensaje normalmente.');
+      alert('Tu navegador no soporta dictado por voz. Pod\u00E9s escribir tu mensaje normalmente.');
       return;
     }
     if (isListening) {
@@ -231,9 +231,9 @@ const LOLo_CONFIG = {
     isListening = false;
     if (micBtn) {
       micBtn.classList.remove('recording');
-      micBtn.title = 'Hablar por micrófono';
+      micBtn.title = 'Hablar por micr\u00F3fono';
     }
-    if (inputField) inputField.placeholder = 'Escribí tu consulta...';
+    if (inputField) inputField.placeholder = 'Escrib\u00ED tu consulta...';
   }
 
   // --- INIT ---
@@ -277,7 +277,7 @@ const LOLo_CONFIG = {
       }
     }
 
-    // 1. Escuchar el punto secreto violeta (#btnAdminSecret / .admin-secret-dot) DIRECTO
+    // 1. Escuchar el punto secreto violeta (#btnAdminSecret / .admin-secret-dot)
     function bindSecretDot() {
       const dots = document.querySelectorAll('#btnAdminSecret, .admin-secret-dot');
       dots.forEach(dot => {
@@ -287,7 +287,7 @@ const LOLo_CONFIG = {
     }
     bindSecretDot();
 
-    // 2. Delegación global permanente
+    // 2. Delegacion global permanente
     document.addEventListener('click', function(e) {
       const targetDot = e.target.closest('#btnAdminSecret, .admin-secret-dot');
       if (targetDot) {
@@ -334,7 +334,7 @@ const LOLo_CONFIG = {
       adminModal.innerHTML = `
         <div class="lolo-admin-box">
           <button class="lolo-admin-close">&times;</button>
-          <div class="lolo-admin-title">🔒 Panel de Control LOLO</div>
+          <div class="lolo-admin-title">\u{1F512} Panel de Control LOLO</div>
           <div class="lolo-admin-subtitle">Acceso exclusivo Administrador</div>
           <div class="lolo-admin-form">
             <div class="lolo-admin-group">
@@ -342,10 +342,10 @@ const LOLo_CONFIG = {
               <input type="text" id="admUser" placeholder="admin" autocomplete="off">
             </div>
             <div class="lolo-admin-group">
-              <label>Contraseña</label>
-              <input type="password" id="admPass" placeholder="••••••••">
+              <label>Contrase\u00F1a</label>
+              <input type="password" id="admPass" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022">
             </div>
-            <div id="admError" class="lolo-admin-error" style="display:none">Credenciales inválidas</div>
+            <div id="admError" class="lolo-admin-error" style="display:none">Credenciales inv\u00E1lidas</div>
             <button id="admLoginBtn" class="lolo-admin-btn">Ingresar</button>
           </div>
         </div>
@@ -366,7 +366,7 @@ const LOLo_CONFIG = {
     const passInp = adminModal.querySelector('#admPass');
     const errDiv = adminModal.querySelector('#admError');
 
-    loginBtn.onclick = async function() {
+    loginBtn.onclick = function() {
       const u = userInp.value.trim();
       const p = passInp.value.trim();
       if (!u || !p) return;
@@ -374,7 +374,7 @@ const LOLo_CONFIG = {
       loginBtn.textContent = 'Verificando...';
       loginBtn.disabled = true;
 
-      // Validación con credenciales admin / polohks
+      // Validacion directa con credenciales admin / polohks
       if (u === ADMIN_CREDENTIALS.user && p === ADMIN_CREDENTIALS.pass) {
         adminSession = { username: u, password: p };
         loadLocalAdminConfig();
@@ -390,7 +390,7 @@ const LOLo_CONFIG = {
       }
 
       errDiv.style.display = 'block';
-      errDiv.textContent = 'Credenciales inválidas';
+      errDiv.textContent = 'Credenciales inv\u00E1lidas';
       loginBtn.textContent = 'Ingresar';
       loginBtn.disabled = false;
     };
@@ -405,14 +405,14 @@ const LOLo_CONFIG = {
     adminModal.innerHTML = `
       <div class="lolo-admin-box">
         <button class="lolo-admin-close">&times;</button>
-        <div class="lolo-admin-title">⚙️ Control Maestro de LOLO</div>
-        <div class="lolo-admin-subtitle">Configuración global del catálogo</div>
+        <div class="lolo-admin-title">\u{2699}\u{FE0F} Control Maestro de LOLO</div>
+        <div class="lolo-admin-subtitle">Configuraci\u00F3n global del cat\u00E1logo</div>
 
         <div class="lolo-admin-switches">
           <div class="lolo-switch-row">
             <div>
-              <div class="lolo-switch-name">🤖 Asistente Virtual LOLO</div>
-              <div class="lolo-switch-desc">Mostrar u ocultar el botón flotante y el chat</div>
+              <div class="lolo-switch-name">\u{1F916} Asistente Virtual LOLO</div>
+              <div class="lolo-switch-desc">Mostrar u ocultar el bot\u00F3n flotante y el chat</div>
             </div>
             <label class="lolo-toggle">
               <input type="checkbox" id="toggleAgente" ${adminConfig.agente_activo ? 'checked' : ''}>
@@ -422,8 +422,8 @@ const LOLo_CONFIG = {
 
           <div class="lolo-switch-row">
             <div>
-              <div class="lolo-switch-name">🎙️ Voz con IA (Voz Clonada)</div>
-              <div class="lolo-switch-desc">Activar o desactivar síntesis de voz en respuestas</div>
+              <div class="lolo-switch-name">\u{1F399}\u{FE0F} Voz con IA (Voz Clonada)</div>
+              <div class="lolo-switch-desc">Activar o desactivar s\u00EDntesis de voz en respuestas</div>
             </div>
             <label class="lolo-toggle">
               <input type="checkbox" id="toggleVoz" ${adminConfig.voz_activa ? 'checked' : ''}>
@@ -432,11 +432,11 @@ const LOLo_CONFIG = {
           </div>
         </div>
 
-        <div id="admSavedMsg" class="lolo-admin-saved" style="display:none">✅ Cambios guardados correctamente</div>
+        <div id="admSavedMsg" class="lolo-admin-saved" style="display:none">\u2705 Cambios guardados correctamente</div>
         
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button id="admSaveBtn" class="lolo-admin-btn" style="flex:1">Guardar Cambios</button>
-          <button id="admLogoutBtn" class="lolo-admin-btn-secondary" style="width:auto">Cerrar Sesión</button>
+          <button id="admLogoutBtn" class="lolo-admin-btn-secondary" style="width:auto">Cerrar Sesi\u00F3n</button>
         </div>
       </div>
     `;
@@ -450,7 +450,7 @@ const LOLo_CONFIG = {
     const logoutBtn = adminModal.querySelector('#admLogoutBtn');
     const savedMsg = adminModal.querySelector('#admSavedMsg');
 
-    saveBtn.onclick = async function() {
+    saveBtn.onclick = function() {
       const nuevoAgente = toggleAg.checked;
       const nuevaVoz = toggleVz.checked;
 
@@ -514,7 +514,7 @@ const LOLo_CONFIG = {
         this.dataset.triedLogo = '1';
         this.src = 'images/logo.png';
       } else {
-        btn.innerHTML = '<span class="lolo-icon-fallback">🛹</span>';
+        btn.innerHTML = '<span class="lolo-icon-fallback">\u{1F6F9}</span>';
       }
     };
     logoImg.onload = function() {
@@ -523,10 +523,10 @@ const LOLo_CONFIG = {
     };
     btn.appendChild(logoImg);
 
-    // Globo flotante de invitación
+    // Globo flotante de invitacion
     const voiceBubble = document.createElement('div');
     voiceBubble.className = 'lolo-voice-invite';
-    voiceBubble.innerHTML = '<span>🎙️ ¡Hablame o escribime!</span>';
+    voiceBubble.innerHTML = '<span>\u{1F399}\u{FE0F} \u00A1Hablame o escribime!</span>';
     voiceBubble.onclick = toggleChat;
     widgetContainer.appendChild(voiceBubble);
 
@@ -554,7 +554,7 @@ const LOLo_CONFIG = {
       voiceBtn.onclick = function() {
         if (adminConfig.voz_activa === false) return;
         voiceEnabled = !voiceEnabled;
-        voiceBtn.textContent = voiceEnabled ? '🔊' : '🔇';
+        voiceBtn.textContent = voiceEnabled ? '\u{1F50A}' : '\u{1F507}';
         voiceBtn.title = voiceEnabled ? 'Voz activada (clic para silenciar)' : 'Voz silenciada (clic para activar)';
         if (!voiceEnabled) {
           if (currentAudio) currentAudio.pause();
@@ -586,7 +586,7 @@ const LOLo_CONFIG = {
 
   // --- HTML DEL CHAT ---
   function buildChatHTML() {
-    const headerLogo = `<img class="header-logo" src="${LOLo_CONFIG.LOGO_URL}" alt="Lolo" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='images/logo.png';}else{this.style.display='none';this.nextElementSibling.style.display='flex'}"><div class="header-logo-fallback" style="display:none">🛹</div>`;
+    const headerLogo = `<img class="header-logo" src="${LOLo_CONFIG.LOGO_URL}" alt="Lolo" onerror="if(!this.dataset.tried){this.dataset.tried=\'1\';this.src=\'images/logo.png\';}else{this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'}"><div class="header-logo-fallback" style="display:none">\u{1F6F9}</div>`;
 
     return `
       <div class="lolo-chat-header">
@@ -595,11 +595,11 @@ const LOLo_CONFIG = {
           <div class="header-name">${LOLo_CONFIG.BUSINESS_NAME}</div>
           <div class="header-status">
             <span class="dot"></span>
-            <span class="status-text">Voz Humana Clonada 🎙️</span>
+            <span class="status-text">Voz Humana Clonada \u{1F399}\u{FE0F}</span>
           </div>
         </div>
-        <button class="header-voice-btn" title="Voz activada (clic para silenciar)">🔊</button>
-        <button class="header-close" aria-label="Cerrar chat">✕</button>
+        <button class="header-voice-btn" title="Voz activada (clic para silenciar)">\u{1F50A}</button>
+        <button class="header-close" aria-label="Cerrar chat">\u2715</button>
       </div>
       <div class="lolo-chat-messages"></div>
       <div class="lolo-suggestions"></div>
@@ -609,11 +609,11 @@ const LOLo_CONFIG = {
         <span class="dot-typing"></span>
       </div>
       <div class="lolo-chat-input-area">
-        <button class="lolo-chat-mic" type="button" title="Hablar por micrófono">🎙️</button>
-        <input type="text" class="lolo-chat-input" placeholder="Escribí tu consulta..." autocomplete="off">
-        <button class="lolo-chat-send" disabled aria-label="Enviar">➤</button>
+        <button class="lolo-chat-mic" type="button" title="Hablar por micr\u00F3fono">\u{1F399}\u{FE0F}</button>
+        <input type="text" class="lolo-chat-input" placeholder="Escrib\u00ED tu consulta..." autocomplete="off">
+        <button class="lolo-chat-send" disabled aria-label="Enviar">\u27A4</button>
       </div>
-      <div class="lolo-chat-footer">Potenciado por IA • ${LOLo_CONFIG.BUSINESS_NAME}</div>
+      <div class="lolo-chat-footer">Potenciado por IA \u2022 ${LOLo_CONFIG.BUSINESS_NAME}</div>
     `;
   }
 
@@ -702,7 +702,7 @@ const LOLo_CONFIG = {
       if (adminConfig.voz_activa !== false) {
         const audioBtn = document.createElement('button');
         audioBtn.className = 'lolo-msg-audio-btn';
-        audioBtn.innerHTML = '🔊 Escuchar';
+        audioBtn.innerHTML = '\u{1F50A} Escuchar';
         audioBtn.onclick = () => playNeuralAudio(msg.audio_b64, msg.text);
         bubble.appendChild(audioBtn);
       }
@@ -738,7 +738,7 @@ const LOLo_CONFIG = {
         <div class="pc-info">
           <div class="pc-nombre">${escapeHTML(producto.nombre)}</div>
           <div class="pc-precio">$ ${formatPrice(producto.precio)}</div>
-          <button class="pc-btn-detalle" type="button">🔍 Ver Detalle</button>
+          <button class="pc-btn-detalle" type="button">\u{1F50D} Ver Detalle</button>
         </div>
       </div>
     `;
@@ -812,7 +812,7 @@ const LOLo_CONFIG = {
         })
       });
 
-      if (!response.ok) throw new Error('Error de conexión');
+      if (!response.ok) throw new Error('Error de conexion');
 
       const data = await response.json();
       showTyping(false);
@@ -828,7 +828,7 @@ const LOLo_CONFIG = {
 
     } catch (err) {
       showTyping(false);
-      addBotMessage('Ups, tuve un problemita de conexión 😕. Probá de nuevo en un ratito. Si necesitas algo urgente, escribime por WhatsApp ¡Te ayudo al toque! 📱', null, true);
+      addBotMessage('Ups, tuve un problemita de conexi\u00F3n. Prob\u00E1 de nuevo en un ratito. Si necesit\u00E1s algo urgente, escribime por WhatsApp \u00A1Te ayudo al toque!', null, true);
     }
 
     isLoading = false;
