@@ -75,11 +75,24 @@ const LOLo_CONFIG = {
     } catch(e) {}
   }
 
-  // Obtener estado del servidor con respaldo local
+  // Obtener estado del servidor con respaldo local y global
   async function fetchAdminStatus() {
     loadLocalAdminConfig();
     applyAdminState();
     try {
+      // 1. Verificar estado global del catalogo
+      const resStatic = await fetch(`estado_admin.json?_t=${Date.now()}`);
+      if (resStatic.ok) {
+        const srvStatic = await resStatic.json();
+        if (srvStatic && typeof srvStatic.agente_activo === 'boolean') {
+          adminConfig = srvStatic;
+          applyAdminState();
+          return;
+        }
+      }
+    } catch(e) {}
+    try {
+      // 2. Verificar API backend si esta disponible
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
       const res = await fetch(`${LOLo_CONFIG.API_BASE}/api/admin/status`, { signal: controller.signal });
