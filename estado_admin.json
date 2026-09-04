@@ -1,1 +1,4 @@
-﻿{"agente_activo":false,"voz_activa":false}
+{
+  "agente_activo": true,
+  "voz_activa": false
+}
