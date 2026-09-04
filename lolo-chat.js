@@ -1,5 +1,5 @@
 /**
- * LOLO SOBRE RUEDAS -- Chat Widget v7.1 (Panel Admin Secreto + Voz Clonada + Microfono STT)
+ * LOLO SOBRE RUEDAS -- Chat Widget v7.3 (Control Maestro Global en la Nube + Voz Clonada + Microfono STT)
  */
 
 const ADMIN_CREDENTIALS = {
@@ -55,7 +55,7 @@ const LOLo_CONFIG = {
   let currentAudio = null;
   let hasPlayedWelcome = false;
 
-  // Estado global del Admin (Control Maestro)
+  // Estado global del Admin (Control Maestro en la Nube)
   let adminConfig = { agente_activo: true, voz_activa: true };
   let adminModal = null;
   let adminSession = null;
@@ -75,39 +75,45 @@ const LOLo_CONFIG = {
     } catch(e) {}
   }
 
-  // Obtener estado del servidor con respaldo local y global
+  // Obtener estado global del servidor en tiempo real (para TODOS los dispositivos)
   async function fetchAdminStatus() {
-    loadLocalAdminConfig();
-    applyAdminState();
     try {
-      // 1. Verificar estado global del catalogo
-      const resStatic = await fetch(`estado_admin.json?_t=${Date.now()}`);
-      if (resStatic.ok) {
-        const srvStatic = await resStatic.json();
-        if (srvStatic && typeof srvStatic.agente_activo === 'boolean') {
-          adminConfig = srvStatic;
+      // 1. Consultar API en Vercel (tiempo real global)
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 3500);
+      const res = await fetch(`${LOLo_CONFIG.API_BASE}/api/admin?_t=${Date.now()}`, { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.ok) {
+        const srv = await res.json();
+        if (srv && typeof srv.agente_activo === 'boolean') {
+          adminConfig.agente_activo = srv.agente_activo;
+          adminConfig.voz_activa = srv.voz_activa !== false;
+          try {
+            localStorage.setItem('lolo_admin_config', JSON.stringify(adminConfig));
+          } catch(e) {}
           applyAdminState();
           return;
         }
       }
     } catch(e) {}
+
     try {
-      // 2. Verificar API backend si esta disponible
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(`${LOLo_CONFIG.API_BASE}/api/admin/status`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const srvConfig = await res.json();
-        if (srvConfig && typeof srvConfig.agente_activo === 'boolean') {
-          adminConfig = srvConfig;
-          try {
-            localStorage.setItem('lolo_admin_config', JSON.stringify(adminConfig));
-          } catch(e) {}
+      // 2. Respaldo estatico
+      const resStatic = await fetch(`estado_admin.json?_t=${Date.now()}`);
+      if (resStatic.ok) {
+        const srvStatic = await resStatic.json();
+        if (srvStatic && typeof srvStatic.agente_activo === 'boolean') {
+          adminConfig.agente_activo = srvStatic.agente_activo;
+          adminConfig.voz_activa = srvStatic.voz_activa !== false;
           applyAdminState();
+          return;
         }
       }
     } catch(e) {}
+
+    // 3. Respaldo local
+    loadLocalAdminConfig();
+    applyAdminState();
   }
 
   function applyAdminState() {
@@ -115,6 +121,9 @@ const LOLo_CONFIG = {
     if (adminConfig.agente_activo === false) {
       widgetContainer.style.display = 'none';
       if (chatOpen) toggleChat();
+      if (currentAudio) { currentAudio.pause(); }
+      if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
+      stopListening();
     } else {
       widgetContainer.style.display = 'block';
     }
@@ -258,6 +267,13 @@ const LOLo_CONFIG = {
     loadSession();
     fetchAdminStatus();
 
+    // Sincronizacion periodica (cada 10 seg y al cambiar de pestaña)
+    setInterval(fetchAdminStatus, 10000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) fetchAdminStatus();
+    });
+    window.addEventListener('focus', fetchAdminStatus);
+
     if (messages.length === 0) {
       addBotMessage(LOLo_CONFIG.MENSAJE_BIENVENIDA, null, false);
     } else {
@@ -379,7 +395,7 @@ const LOLo_CONFIG = {
     const passInp = adminModal.querySelector('#admPass');
     const errDiv = adminModal.querySelector('#admError');
 
-    loginBtn.onclick = function() {
+    loginBtn.onclick = async function() {
       const u = userInp.value.trim();
       const p = passInp.value.trim();
       if (!u || !p) return;
@@ -387,18 +403,10 @@ const LOLo_CONFIG = {
       loginBtn.textContent = 'Verificando...';
       loginBtn.disabled = true;
 
-      // Validacion directa con credenciales admin / polohks
       if (u === ADMIN_CREDENTIALS.user && p === ADMIN_CREDENTIALS.pass) {
         adminSession = { username: u, password: p };
-        loadLocalAdminConfig();
-        applyAdminState();
+        await fetchAdminStatus();
         renderAdminControls();
-
-        fetch(`${LOLo_CONFIG.API_BASE}/api/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: u, password: p })
-        }).catch(() => {});
         return;
       }
 
@@ -418,17 +426,17 @@ const LOLo_CONFIG = {
     adminModal.innerHTML = `
       <div class="lolo-admin-box">
         <button class="lolo-admin-close">&times;</button>
-        <div class="lolo-admin-title">\u{2699}\u{FE0F} Control Maestro de LOLO</div>
-        <div class="lolo-admin-subtitle">Configuraci\u00F3n global del cat\u00E1logo</div>
+        <div class="lolo-admin-title">\u{2699}\u{FE0F} Control Maestro Global</div>
+        <div class="lolo-admin-subtitle">Configuraci\u00F3n en tiempo real para todos los clientes</div>
 
         <div class="lolo-admin-switches">
           <div class="lolo-switch-row">
             <div>
               <div class="lolo-switch-name">\u{1F916} Asistente Virtual LOLO</div>
-              <div class="lolo-switch-desc">Mostrar u ocultar el bot\u00F3n flotante y el chat</div>
+              <div class="lolo-switch-desc">Activa o apaga el asistente para toda la web</div>
             </div>
             <label class="lolo-toggle">
-              <input type="checkbox" id="toggleAgente" ${adminConfig.agente_activo ? 'checked' : ''}>
+              <input type="checkbox" id="toggleAgente" ${adminConfig.agente_activo !== false ? 'checked' : ''}>
               <span class="lolo-slider"></span>
             </label>
           </div>
@@ -436,16 +444,16 @@ const LOLo_CONFIG = {
           <div class="lolo-switch-row">
             <div>
               <div class="lolo-switch-name">\u{1F399}\u{FE0F} Voz con IA (Voz Clonada)</div>
-              <div class="lolo-switch-desc">Activar o desactivar s\u00EDntesis de voz en respuestas</div>
+              <div class="lolo-switch-desc">Activa o silencia el audio de respuestas</div>
             </div>
             <label class="lolo-toggle">
-              <input type="checkbox" id="toggleVoz" ${adminConfig.voz_activa ? 'checked' : ''}>
+              <input type="checkbox" id="toggleVoz" ${adminConfig.voz_activa !== false ? 'checked' : ''}>
               <span class="lolo-slider"></span>
             </label>
           </div>
         </div>
 
-        <div id="admSavedMsg" class="lolo-admin-saved" style="display:none">\u2705 Cambios guardados correctamente</div>
+        <div id="admSavedMsg" class="lolo-admin-saved" style="display:none">\u2705 \u00A1Guardado globalmente para todo el mundo!</div>
         
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button id="admSaveBtn" class="lolo-admin-btn" style="flex:1">Guardar Cambios</button>
@@ -463,11 +471,11 @@ const LOLo_CONFIG = {
     const logoutBtn = adminModal.querySelector('#admLogoutBtn');
     const savedMsg = adminModal.querySelector('#admSavedMsg');
 
-    saveBtn.onclick = function() {
+    saveBtn.onclick = async function() {
       const nuevoAgente = toggleAg.checked;
       const nuevaVoz = toggleVz.checked;
 
-      saveBtn.textContent = 'Guardando...';
+      saveBtn.textContent = 'Guardando en la nube...';
       saveBtn.disabled = true;
 
       adminConfig.agente_activo = nuevoAgente;
@@ -476,11 +484,10 @@ const LOLo_CONFIG = {
       try {
         localStorage.setItem('lolo_admin_config', JSON.stringify(adminConfig));
       } catch(e) {}
-
       applyAdminState();
 
       try {
-        fetch(`${LOLo_CONFIG.API_BASE}/api/admin/config`, {
+        const res = await fetch(`${LOLo_CONFIG.API_BASE}/api/admin`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -489,13 +496,27 @@ const LOLo_CONFIG = {
             agente_activo: nuevoAgente,
             voz_activa: nuevaVoz
           })
-        }).catch(() => {});
-      } catch(e) {}
+        });
 
-      savedMsg.style.display = 'block';
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && resData.config) {
+            adminConfig = resData.config;
+          }
+          savedMsg.textContent = '\u2705 \u00A1Guardado globalmente para todo el mundo!';
+          savedMsg.style.display = 'block';
+        } else {
+          savedMsg.textContent = '\u26A0\uFE0F Guardado local (error al sincronizar nube)';
+          savedMsg.style.display = 'block';
+        }
+      } catch(e) {
+        savedMsg.textContent = '\u26A0\uFE0F Guardado local (sin conexi\u00F3n)';
+        savedMsg.style.display = 'block';
+      }
+
       saveBtn.textContent = 'Guardar Cambios';
       saveBtn.disabled = false;
-      setTimeout(() => { if (savedMsg) savedMsg.style.display = 'none'; }, 3000);
+      setTimeout(() => { if (savedMsg) savedMsg.style.display = 'none'; }, 4000);
     };
 
     logoutBtn.onclick = function() {
@@ -662,7 +683,7 @@ const LOLo_CONFIG = {
   // --- ENVIAR MENSAJE ---
   function sendMessage() {
     const text = inputField.value.trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || adminConfig.agente_activo === false) return;
 
     addUserMessage(text);
     inputField.value = '';
