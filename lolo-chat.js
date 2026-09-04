@@ -56,7 +56,7 @@ const LOLo_CONFIG = {
   let hasPlayedWelcome = false;
 
   // Estado global del Admin (Control Maestro en la Nube)
-  let adminConfig = { agente_activo: true, voz_activa: true };
+  let adminConfig = { agente_activo: false, voz_activa: true };
   let adminModal = null;
   let adminSession = null;
 
