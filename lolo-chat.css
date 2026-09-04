@@ -1,0 +1,842 @@
+/* ============================================
+   LOLO SOBRE RUEDAS — Chat Widget
+   Widget flotante para el catálogo web
+   ============================================ */
+
+/* Contenedor principal del widget */
+#lolo-chat-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* === BOTÓN FLOTANTE === */
+.lolo-chat-btn {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #E84393 0%, #1B2A4A 100%);
+  box-shadow: 0 4px 20px rgba(232, 67, 147, 0.45), 0 0 0 0 rgba(232, 67, 147, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: lolo-pulse 2.5s ease-in-out infinite;
+  padding: 0;
+  overflow: hidden;
+}
+
+.lolo-chat-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(232, 67, 147, 0.55);
+}
+
+.lolo-chat-btn:active {
+  transform: scale(0.95);
+}
+
+.lolo-chat-btn img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.lolo-chat-btn .lolo-icon-fallback {
+  font-size: 28px;
+  line-height: 1;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* Indicador de mensajes no leídos */
+.lolo-chat-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  background: #1B2A4A;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #F5F8FC;
+  animation: lolo-badge-pop 0.3s ease;
+}
+
+.lolo-chat-badge.visible {
+  display: flex;
+}
+
+/* Animación pulso del botón */
+@keyframes lolo-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(232, 67, 147, 0.45), 0 0 0 0 rgba(232, 67, 147, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(232, 67, 147, 0.45), 0 0 0 10px rgba(232, 67, 147, 0); }
+}
+
+@keyframes lolo-badge-pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* === VENTANA DE CHAT === */
+.lolo-chat-window {
+  position: absolute;
+  bottom: 76px;
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 520px;
+  max-height: calc(100vh - 120px);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 12px 48px rgba(15, 27, 51, 0.25), 0 0 0 1px rgba(27, 42, 74, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.lolo-chat-window.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+/* === HEADER DEL CHAT === */
+.lolo-chat-header {
+  background: linear-gradient(135deg, #1B2A4A 0%, #0F1B33 100%);
+  color: #fff;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.lolo-chat-header .header-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #E84393;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.lolo-chat-header .header-logo-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E84393, #5BA4CF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.lolo-chat-header .header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lolo-chat-header .header-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.lolo-chat-header .header-status {
+  font-size: 12px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.lolo-chat-header .header-status .dot {
+  width: 7px;
+  height: 7px;
+  background: #4ADE80;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.lolo-chat-header .header-status .dot.thinking {
+  background: #FBBF24;
+  animation: lolo-blink 1s ease infinite;
+}
+
+@keyframes lolo-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.lolo-chat-header .header-voice-btn,
+.lolo-chat-header .header-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.lolo-chat-header .header-voice-btn:hover,
+.lolo-chat-header .header-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* === ÁREA DE MENSAJES === */
+.lolo-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #F9FAFB;
+  scroll-behavior: smooth;
+}
+
+.lolo-chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.lolo-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lolo-chat-messages::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 10px;
+}
+
+/* Burbuja de mensaje */
+.lolo-msg {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  animation: lolo-msg-in 0.3s ease;
+}
+
+@keyframes lolo-msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lolo-msg.bot {
+  align-self: flex-start;
+}
+
+.lolo-msg.user {
+  align-self: flex-end;
+}
+
+.lolo-msg .bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  word-wrap: break-word;
+}
+
+.lolo-msg.bot .bubble {
+  background: #fff;
+  color: #1a1a2e;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.lolo-msg.user .bubble {
+  background: linear-gradient(135deg, #E84393, #c73680);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+/* Producto card dentro del chat */
+.lolo-product-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E5E7EB;
+  max-width: 260px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.lolo-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.lolo-product-card .pc-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lolo-product-card .pc-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lolo-product-card .pc-img .no-img {
+  color: #bbb;
+  font-size: 11px;
+}
+
+.lolo-product-card .pc-info {
+  padding: 10px 12px;
+}
+
+.lolo-product-card .pc-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.35;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lolo-product-card .pc-price {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #E84393;
+}
+
+/* Sugerencias rápidas */
+.lolo-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 8px;
+  background: #F9FAFB;
+}
+
+.lolo-suggestion-btn {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1.5px solid #E5E7EB;
+  background: #fff;
+  color: #1B2A4A;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.lolo-suggestion-btn:hover {
+  border-color: #E84393;
+  color: #E84393;
+  background: #FDF2F8;
+}
+
+/* Indicador de escritura */
+.lolo-typing {
+  align-self: flex-start;
+  padding: 12px 18px;
+  background: #fff;
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: none;
+}
+
+.lolo-typing.visible {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.lolo-typing .dot-typing {
+  width: 7px;
+  height: 7px;
+  background: #94A3B8;
+  border-radius: 50%;
+  animation: lolo-typing-bounce 1.2s ease infinite;
+}
+
+.lolo-typing .dot-typing:nth-child(2) { animation-delay: 0.15s; }
+.lolo-typing .dot-typing:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes lolo-typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* === INPUT DEL CHAT === */
+.lolo-chat-input-area {
+  padding: 12px 14px;
+  background: #fff;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.lolo-chat-input {
+  flex: 1;
+  border: 2px solid #E5E7EB;
+  border-radius: 100px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a2e;
+  background: #F9FAFB;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.lolo-chat-input:focus {
+  border-color: #E84393;
+  background: #fff;
+}
+
+.lolo-chat-input::placeholder {
+  color: #94A3B8;
+}
+
+/* Botón de micrófono */
+.lolo-chat-mic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #1E293B;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.lolo-chat-mic:hover {
+  background: #E2E8F0;
+  transform: scale(1.05);
+}
+
+.lolo-chat-mic.recording {
+  background: #EF4444;
+  color: #fff;
+  border-color: #DC2626;
+  animation: lolo-mic-pulse 1.2s infinite;
+}
+
+@keyframes lolo-mic-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.lolo-chat-send {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #E84393, #c73680);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.lolo-chat-send:hover {
+  transform: scale(1.08);
+}
+
+.lolo-chat-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* === FOOTER DEL CHAT === */
+.lolo-chat-footer {
+  padding: 8px 14px;
+  text-align: center;
+  font-size: 10.5px;
+  color: #94A3B8;
+  background: #F9FAFB;
+  border-top: 1px solid #F1F5F9;
+  flex-shrink: 0;
+}
+
+/* === RESPONSIVE CELULARES === */
+@media (max-width: 480px) {
+  #lolo-chat-widget {
+    bottom: 16px;
+    right: 14px;
+  }
+
+  .lolo-chat-window {
+    width: calc(100vw - 28px);
+    height: 72vh;
+    max-height: 520px;
+    bottom: 68px;
+    right: 0;
+    border-radius: 18px;
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
+  }
+
+  .lolo-chat-header {
+    padding: 12px 14px;
+  }
+
+  .lolo-chat-header .header-logo,
+  .lolo-chat-header .header-logo-fallback {
+    width: 36px;
+    height: 36px;
+  }
+
+  .lolo-chat-header .header-name {
+    font-size: 14.5px;
+  }
+
+  .lolo-chat-btn {
+    width: 54px;
+    height: 54px;
+  }
+
+  .lolo-voice-invite {
+    bottom: 66px;
+    font-size: 11.5px;
+    padding: 6px 12px;
+  }
+}
+
+/* === DARK MODE (si el catálogo lo usa en el futuro) === */
+@media (prefers-color-scheme: dark) {
+  /* Respetamos el tema claro del catálogo actual */
+}
+
+.pc-ver-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #00d2d3;
+  background: rgba(0, 210, 211, 0.08);
+  border: 1px solid rgba(0, 210, 211, 0.25);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.lolo-product-card:hover .pc-ver-btn {
+  background: #00d2d3;
+  color: #1a1a2e;
+}
+
+/* === BOTÓN ESCUCHAR AUDIO EN MENSAJE === */
+.lolo-msg-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lolo-msg-audio-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+/* === BURBUJA FLOTANTE DE INVITACIÓN "¡HABLAME!" EN CELULAR/DESKTOP === */
+.lolo-voice-invite {
+  position: absolute;
+  bottom: 74px;
+  right: 0;
+  background: #1B2A4A;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px 20px 4px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  animation: lolo-float-bounce 3s ease-in-out infinite;
+  border: 1px solid rgba(232, 67, 147, 0.4);
+  z-index: 9998;
+}
+
+@keyframes lolo-float-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* === MODAL SECRETO DE ADMIN === */
+.lolo-admin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(9, 10, 16, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: lolo-fade-in 0.2s ease;
+}
+
+@keyframes lolo-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lolo-admin-box {
+  background: #121422;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.2);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  color: #fff;
+  position: relative;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.lolo-admin-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 22px;
+  cursor: pointer;
+}
+.lolo-admin-close:hover { color: #fff; }
+
+.lolo-admin-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.lolo-admin-subtitle {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.lolo-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lolo-admin-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lolo-admin-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.lolo-admin-group input {
+  background: #090a10;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.lolo-admin-group input:focus {
+  border-color: #a855f7;
+}
+
+.lolo-admin-error {
+  color: #ef4444;
+  font-size: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.lolo-admin-saved {
+  color: #10b981;
+  font-size: 12.5px;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  margin-top: 14px;
+  text-align: center;
+}
+
+.lolo-admin-btn {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.lolo-admin-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+
+.lolo-admin-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lolo-admin-btn-secondary:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+/* Switches */
+.lolo-admin-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lolo-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #090a10;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lolo-switch-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.lolo-switch-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.lolo-toggle {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.lolo-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.lolo-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #334155;
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.lolo-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.lolo-toggle input:checked + .lolo-slider {
+  background: linear-gradient(135deg, #a855f7, #38bdf8);
+}
+
+.lolo-toggle input:checked + .lolo-slider:before {
+  transform: translateX(22px);
+}
+
