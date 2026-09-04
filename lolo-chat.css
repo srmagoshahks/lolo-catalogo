@@ -1,6 +1,6 @@
 /* ============================================
-   LOLO SOBRE RUEDAS — Chat Widget
-   Widget flotante para el catálogo web
+   LOLO SOBRE RUEDAS â€” Chat Widget
+   Widget flotante para el catÃ¡logo web
    ============================================ */
 
 /* Contenedor principal del widget */
@@ -12,7 +12,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* === BOTÓN FLOTANTE === */
+/* === BOTÃ“N FLOTANTE === */
 .lolo-chat-btn {
   width: 62px;
   height: 62px;
@@ -54,7 +54,7 @@
   pointer-events: none;
 }
 
-/* Indicador de mensajes no leídos */
+/* Indicador de mensajes no leÃ­dos */
 .lolo-chat-badge {
   position: absolute;
   top: -2px;
@@ -77,7 +77,7 @@
   display: flex;
 }
 
-/* Animación pulso del botón */
+/* AnimaciÃ³n pulso del botÃ³n */
 @keyframes lolo-pulse {
   0%, 100% { box-shadow: 0 4px 20px rgba(232, 67, 147, 0.45), 0 0 0 0 rgba(232, 67, 147, 0.3); }
   50% { box-shadow: 0 4px 20px rgba(232, 67, 147, 0.45), 0 0 0 10px rgba(232, 67, 147, 0); }
@@ -212,7 +212,7 @@
   transform: scale(1.05);
 }
 
-/* === ÁREA DE MENSAJES === */
+/* === ÃREA DE MENSAJES === */
 .lolo-chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -340,7 +340,7 @@
   color: #E84393;
 }
 
-/* Sugerencias rápidas */
+/* Sugerencias rÃ¡pidas */
 .lolo-suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -434,7 +434,7 @@
   color: #94A3B8;
 }
 
-/* Botón de micrófono */
+/* BotÃ³n de micrÃ³fono */
 .lolo-chat-mic {
   width: 40px;
   height: 40px;
@@ -552,9 +552,9 @@
   }
 }
 
-/* === DARK MODE (si el catálogo lo usa en el futuro) === */
+/* === DARK MODE (si el catÃ¡logo lo usa en el futuro) === */
 @media (prefers-color-scheme: dark) {
-  /* Respetamos el tema claro del catálogo actual */
+  /* Respetamos el tema claro del catÃ¡logo actual */
 }
 
 .pc-ver-btn {
@@ -579,7 +579,7 @@
   color: #1a1a2e;
 }
 
-/* === BOTÓN ESCUCHAR AUDIO EN MENSAJE === */
+/* === BOTÃ“N ESCUCHAR AUDIO EN MENSAJE === */
 .lolo-msg-audio-btn {
   display: inline-flex;
   align-items: center;
@@ -602,7 +602,7 @@
   transform: translateY(-1px);
 }
 
-/* === BURBUJA FLOTANTE DE INVITACIÓN "¡HABLAME!" EN CELULAR/DESKTOP === */
+/* === BURBUJA FLOTANTE DE INVITACIÃ“N "Â¡HABLAME!" EN CELULAR/DESKTOP === */
 .lolo-voice-invite {
   position: absolute;
   bottom: 74px;
