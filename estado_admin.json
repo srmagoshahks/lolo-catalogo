@@ -1,4 +1,4 @@
 {
-  "agente_activo": true,
-  "voz_activa": true
+  "agente_activo": false,
+  "voz_activa": false
 }
